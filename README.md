@@ -1,5 +1,5 @@
 # Realtime-chat-app
 <p>
-<img src="https://user-images.githubusercontent.com/43510609/126697761-11d61c26-0c89-44f6-a6e4-76522c714c58.png" width="300"/>
-<img src="https://user-images.githubusercontent.com/43510609/126697775-ed1cd96a-7b9b-4826-85f7-ceaf7bd9a51c.png" width="300"/>
+<img src="https://user-images.githubusercontent.com/43510609/128087272-ebce5251-8085-4f39-a7be-cfaf1a84a901.png" width="360"/>
+<img src="https://user-images.githubusercontent.com/43510609/128086968-9a071138-2eb6-4c78-a473-0d578d361862.png" width="360"/>
 </p>
