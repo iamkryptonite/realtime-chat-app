@@ -23,22 +23,25 @@ const Chats = ({navigation,route}) => {
 
     const [message,setMessage] = useState();
     const [allMessages,setAllMessages] = useState([]);
-    const [userID,setUserID] = useState(route.params.user_id);
-    const [userName,setUserName] = useState(route.params.user_name);
-    const [forumID,setForumID] = useState(route.params.forum_id);
+    const [userID,setUserID] = useState(route.params.uid_1);
+    const [userName,setUserName] = useState(route.params.username_1);
+    const [chatID,setchatID] = useState(route.params.chatID);
     const [imageURI,setImageURI] = useState();
+    console.log(route.params);
 
     useEffect(() => {
+        if(chatID){
         const subscriber = firestore()
-          .collection('forums')
-          .doc(route.params.forum_id)
-          .onSnapshot(documentSnapshot => {
-            // console.log('User data: ', documentSnapshot._data);
-            setAllMessages(documentSnapshot._data.messages);
-          });
-        // Stop listening for updates when no longer required
-        return () => subscriber();
-      }, [route.params.forum_id]);
+            .collection('chats')
+            .doc(chatID)
+            .onSnapshot(documentSnapshot => {
+                // console.log('User data: ', documentSnapshot._data);
+                setAllMessages(documentSnapshot._data.messages);
+            });
+            // Stop listening for updates when no longer required
+            return () => subscriber();
+        }
+      }, [chatID]);
 
 
     const sendMessage = () =>{
@@ -52,20 +55,28 @@ const Chats = ({navigation,route}) => {
             type:'text',
             timestamp: new Date().getTime(),
         });
-        firestore()
-        .collection('forums')
-        .doc(forumID)
-        .update({
-            messages: tmp,
-        })
-        .then(() => {
-            console.log('User updated!');
-        });
+        if(!chatID){
+            firestore().collection('chats').add({messages:[]})
+            .then((docRef)=>{
+                setchatID(docRef.id);
+                firestore().collection('users').doc(userID).update({[`chatIDs.${route.params.uid_2}`]:docRef.id});
+                firestore().collection('users').doc(route.params.uid_2).update({[`chatIDs.${userID}`]:docRef.id});
+            });
+        }
+        // firestore()
+        // .collection('chats')
+        // .doc(chatID)
+        // .update({
+        //     messages: tmp,
+        // })
+        // .then(() => {
+        //     console.log('User updated!');
+        // });
         setMessage();
     };
 
     const sendPhoto = (image,width,height) =>{
-        console.log(image,width,height);
+        // console.log(image,width,height);
         var tmp = allMessages;
         tmp.push({
             message_id:uuid.v4(),
@@ -80,15 +91,15 @@ const Chats = ({navigation,route}) => {
             },
         });
         firestore()
-        .collection('forums')
-        .doc(forumID)
+        .collection('chats')
+        .doc(chatID)
         .update({
             messages: tmp,
         })
         .then(() => {
             console.log('User updated!');
         });
-        console.log(image);
+        // console.log(image);
     };
 
     const handleChoosePhoto = () => {
@@ -151,7 +162,7 @@ const Chats = ({navigation,route}) => {
             <HStack alignItems="center" mt={6} style={styles.header}>
                 <Avatar source = {require('../assets/profile_placeholder.jpg')}>SS</Avatar>
                 <View style={styles.chatDisplayView}>
-                    <Text style={styles.chatDisplayText}>{route.params.name}</Text>
+                    <Text style={styles.chatDisplayText}>{route.params.username_2}</Text>
                 </View>
             </HStack>
             <ScrollView style={styles.chatscroll}>

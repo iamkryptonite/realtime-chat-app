@@ -1,48 +1,43 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable curly */
-/* eslint-disable prettier/prettier */
+/* eslint-disable react/self-closing-comp */
 /* eslint-disable no-unused-vars */
 /* eslint-disable keyword-spacing */
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {Text, View, Button, StyleSheet, TextInput ,TouchableHighlight, ScrollView, Image} from 'react-native';
-// import { Input, Stack, Center, Heading, NativeBaseProvider } from 'native-base';
 import auth from '@react-native-firebase/auth';
 import {styles} from './style';
-import { Avatar,
-    Box,Menu,
-    HamburgerIcon,
-    Pressable,
-    Heading,
-    VStack,
-    Center,
-    HStack,
-    Spinner,
-    } from 'native-base';
+import { Avatar,Box,Menu,HamburgerIcon,Pressable,Heading,VStack,Center,HStack,Spinner} from 'native-base';
 import { NavigationContainer } from '@react-navigation/native';
 import {
     createDrawerNavigator,
     DrawerContentScrollView,
 } from '@react-navigation/drawer';
 import firestore from '@react-native-firebase/firestore';
-import {Icon} from 'react-native-vector-icons/Entypo';
 
 const Drawer = createDrawerNavigator();
 
 const ChatRooms = ({navigation,route}) => {
 
-    const [userData,setuserData] = useState(route.params);
-    const [forumData,setforumData] = useState();
-    const [showModal, setShowModal] = useState(false);
+    const [userData,setuserData] = useState();
+    const [chatData,setchatData] = useState();
 
-    // console.log(userData.display_name);
+    useEffect(() => {
+        const subscriber = firestore()
+            .collection('users')
+            .doc(userData.uid)
+            .onSnapshot(documentSnapshot => {
+                // console.log('User data: ', documentSnapshot._data);
+                setuserData(documentSnapshot._data);
+            });
+            // Stop listening for updates when no longer required
+            return () => subscriber();
+      }, [userData.uid]);
 
     async function fetchData(){
         let data =  await firestore().collection('users').doc(route.params.user.uid).get();
-        let forums =  await firestore().collection('forums').get();
-        // console.log(forums);
-        setuserData(data._data);
-        setforumData(forums._docs);
-        // console.log(forums._docs[0].id);
+        let chats =  await firestore().collection('users').get();
+        setuserData({...data._data,uid:route.params.user.uid});
+        setchatData(chats._docs);
     }
 
     const handleLogout = () =>{
@@ -53,28 +48,29 @@ const ChatRooms = ({navigation,route}) => {
 
 
     const getChats = () =>{
-        if(!forumData){
+        if(!chatData){
             fetchData();
             return(
                 <Spinner/>
             );
         }
-        return forumData.map((e)=>{
+        return chatData.map((e)=>{
+            // console.log(e._data.chatIDs?.[userData.uid]);
             return(
                 <Pressable
                     onPress={()=>
                         navigation.navigate('IndividualChat',{
-                            name : e._data.forum_name,
-                            messages : e._data.messages,
-                            user_id : 'b2ZCHM1XkcV4QWmWPGRCL7PnzRl2',
-                            forum_id : e.id,
-                            user_name : userData.display_name,
+                            username_2 : e._data.display_name,
+                            uid_1 : userData.uid,
+                            uid_2 : e.id,
+                            username_1 : userData.display_name,
+                            chatID: e._data.chatIDs?.[userData.uid],
                         })
                     } key={e.id}>
                     <HStack style={styles.chatStack}>
-                        <Avatar source = {require('../assets/profile_placeholder.jpg')}>SS</Avatar>
+                        <Avatar source = {require('../assets/profile_placeholder.jpg')}></Avatar>
                         <View style={styles.chatDisplayView}>
-                            <Text style={styles.chatDisplayText}>{e._data.forum_name}</Text>
+                            <Text style={styles.chatDisplayText}>{e._data.display_name}</Text>
                         </View>
                     </HStack>
                 </Pressable>

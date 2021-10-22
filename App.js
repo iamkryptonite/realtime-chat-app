@@ -18,14 +18,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NativeBaseProvider, Box } from 'native-base';
 import auth from '@react-native-firebase/auth';
-import {
-    GoogleSignin,
-    GoogleSigninButton,
-    statusCodes,
-} from '@react-native-google-signin/google-signin';
 import ChatRooms from './components/ChatList';
 import Chat from './components/Chat';
 import {Styles} from './style';
+import firestore from '@react-native-firebase/firestore';
+
 
 
 const Separator = () => (
@@ -34,9 +31,9 @@ const Separator = () => (
 
 const Stack = createStackNavigator();
 
-const ProfileScreen = ({ navigation, route }) => {
-  return <Text>This is {route.params.name}'s profile</Text>;
-};
+// const ProfileScreen = ({ navigation, route }) => {
+//   return <Text>This is {route.params.name}'s profile</Text>;
+// };
 
 const App = () => {
   const [username, onChangeUserName] = useState('');
@@ -47,8 +44,8 @@ const App = () => {
   const [user, setUser] = useState();
   const [uid,setuid] = useState();
 
-  function onAuthStateChanged(user) {
-    setUser(user);
+  function onAuthStateChanged(user_details){
+    setUser(user_details);
     if(initializing) setInitializing(false);
     setuid(user?.uid);
   }
@@ -56,7 +53,7 @@ const App = () => {
   const handleLogin = ()=>{
     auth()
     .signInWithEmailAndPassword(email, password)
-    .then(() => {
+    .then((cred) => {
         console.log('User account created & signed in!');
     })
     .catch(error => {
@@ -70,8 +67,16 @@ const App = () => {
   const handleSignup = ()=>{
     auth()
     .createUserWithEmailAndPassword(email, password)
-    .then(() => {
-        console.log('User account created & signed in!');
+    .then((cred) => {
+        firestore()
+        .collection('users')
+        .doc(cred.user.uid)
+        .set({
+          display_name:username,
+        })
+        .then((user) => {
+          console.log(user);
+        });
     })
     .catch(error => {
         console.log(error.code);
