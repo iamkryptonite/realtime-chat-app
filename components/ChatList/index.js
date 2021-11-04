@@ -18,20 +18,19 @@ const Drawer = createDrawerNavigator();
 
 const ChatRooms = ({navigation,route}) => {
 
-    const [userData,setuserData] = useState();
+    const [userData,setuserData] = useState(route.params.user);
     const [chatData,setchatData] = useState();
 
     useEffect(() => {
         const subscriber = firestore()
             .collection('users')
-            .doc(userData.uid)
+            .doc(route.params.uid)
             .onSnapshot(documentSnapshot => {
-                // console.log('User data: ', documentSnapshot._data);
                 setuserData(documentSnapshot._data);
             });
             // Stop listening for updates when no longer required
             return () => subscriber();
-      }, [userData.uid]);
+      }, [route.params.uid]);
 
     async function fetchData(){
         let data =  await firestore().collection('users').doc(route.params.user.uid).get();
@@ -56,14 +55,16 @@ const ChatRooms = ({navigation,route}) => {
         }
         return chatData.map((e)=>{
             // console.log(e._data.chatIDs?.[userData.uid]);
+            // console.log(e._data.chatIDs);
+            // console.log(userData.uid);
             return(
                 <Pressable
                     onPress={()=>
                         navigation.navigate('IndividualChat',{
                             username_2 : e._data.display_name,
-                            uid_1 : userData.uid,
+                            uid_1 : userData?.uid,
                             uid_2 : e.id,
-                            username_1 : userData.display_name,
+                            username_1 : userData?.display_name,
                             chatID: e._data.chatIDs?.[userData.uid],
                         })
                     } key={e.id}>

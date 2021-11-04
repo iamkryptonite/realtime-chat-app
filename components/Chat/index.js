@@ -27,7 +27,7 @@ const Chats = ({navigation,route}) => {
     const [userName,setUserName] = useState(route.params.username_1);
     const [chatID,setchatID] = useState(route.params.chatID);
     const [imageURI,setImageURI] = useState();
-    console.log(route.params);
+    // console.log(route.params);
 
     useEffect(() => {
         if(chatID){
@@ -35,7 +35,6 @@ const Chats = ({navigation,route}) => {
             .collection('chats')
             .doc(chatID)
             .onSnapshot(documentSnapshot => {
-                // console.log('User data: ', documentSnapshot._data);
                 setAllMessages(documentSnapshot._data.messages);
             });
             // Stop listening for updates when no longer required
@@ -45,7 +44,6 @@ const Chats = ({navigation,route}) => {
 
 
     const sendMessage = () =>{
-        // console.log(message);
         var tmp = allMessages;
         tmp.push({
             message_id:uuid.v4(),
@@ -61,22 +59,25 @@ const Chats = ({navigation,route}) => {
                 setchatID(docRef.id);
                 firestore().collection('users').doc(userID).update({[`chatIDs.${route.params.uid_2}`]:docRef.id});
                 firestore().collection('users').doc(route.params.uid_2).update({[`chatIDs.${userID}`]:docRef.id});
+                firestore()
+                .collection('chats')
+                .doc(docRef.id)
+                .update({
+                    messages: tmp,
+                });
+            });
+        }else{
+            firestore()
+            .collection('chats')
+            .doc(chatID)
+            .update({
+                messages: tmp,
             });
         }
-        // firestore()
-        // .collection('chats')
-        // .doc(chatID)
-        // .update({
-        //     messages: tmp,
-        // })
-        // .then(() => {
-        //     console.log('User updated!');
-        // });
         setMessage();
     };
 
-    const sendPhoto = (image,width,height) =>{
-        // console.log(image,width,height);
+    const sendPhoto = (image,width,height) => {
         var tmp = allMessages;
         tmp.push({
             message_id:uuid.v4(),
@@ -99,7 +100,6 @@ const Chats = ({navigation,route}) => {
         .then(() => {
             console.log('User updated!');
         });
-        // console.log(image);
     };
 
     const handleChoosePhoto = () => {
@@ -107,11 +107,9 @@ const Chats = ({navigation,route}) => {
           noData: true,
         };
         launchImageLibrary(options, response => {
-            // console.log(response.assets[0]);
             if(response.assets[0].uri){
                 var width = response.assets[0].width;
                 var height = response.assets[0].height;
-                // console.log(width,height);
                 setImageURI(response.assets[0].uri);
                 ImgToBase64.getBase64String(response.assets[0].uri)
                 .then((base64String) =>{

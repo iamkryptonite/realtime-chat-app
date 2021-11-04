@@ -130,7 +130,7 @@ const App = () => {
             </View>
             <Separator/>
             <TouchableHighlight onPress={handleLoginTypeChange}>
-              <Text style={Styles.loginText}>Create a new account</Text>
+              <Text style={{color:'#000'}}>Create a new account</Text>
             </TouchableHighlight>
         </View>
       );
@@ -168,7 +168,7 @@ const App = () => {
             </View>
             <Separator/>
             <TouchableHighlight onPress={handleLoginTypeChange}>
-              <Text style={Styles.loginText}>Login with an existing account</Text>
+              <Text style={{color:'#000'}}>Login with an existing account</Text>
             </TouchableHighlight>
         </View>
       );
